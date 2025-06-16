@@ -1,0 +1,33 @@
+a!localVariables(
+  local!weatherData: rule!ML_ShowWeather(),
+  
+  a!formLayout(
+    label: "Weather Dashboard",
+    contents: {
+      a!cardLayout(
+        contents: {
+          a!richTextDisplayField(
+            value: a!richTextItem(
+              text: "🌤️ Weather Information",
+              size: "LARGE",
+              style: "STRONG"
+            )
+          ),
+          a!textDisplayField(
+            label: "API Status",
+            value: if(local!weatherData.apiSuccess, "✅ Connected", "❌ Error")
+          ),
+          a!textDisplayField(
+            label: "Current Temperature", 
+            value: local!weatherData.temperature
+          ),
+          a!textDisplayField(
+            label: "Location",
+            value: local!weatherData.location
+          )
+        },
+        style: "ACCENT"
+      )
+    }
+  )
+)
