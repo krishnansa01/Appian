@@ -1,33 +1,28 @@
-a!localVariables(
-  local!weatherData: rule!ML_ShowWeather(),
-  
-  a!formLayout(
-    label: "Weather Dashboard",
-    contents: {
-      a!cardLayout(
-        contents: {
-          a!richTextDisplayField(
-            value: a!richTextItem(
-              text: "🌤️ Weather Information",
-              size: "LARGE",
-              style: "STRONG"
+a!save(
+  ri!screenSectionMapList,
+  a!forEach(
+    items: ri!screenSectionMapList,
+    expression: if(
+      fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
+      a!map(
+        entity: fv!item.entity,
+        screenSection: fv!item.screenSection,
+        status: a!if(
+          condition: all(
+            a!forEach(
+              items: local!screenSectionBeneficiariesMap,
+              expression: and(
+                not(isnull(fv!item.status)),
+                fv!item.status <> ""
+              )
             )
           ),
-          a!textDisplayField(
-            label: "API Status",
-            value: if(local!weatherData.apiSuccess, "✅ Connected", "❌ Error")
-          ),
-          a!textDisplayField(
-            label: "Current Temperature", 
-            value: local!weatherData.temperature
-          ),
-          a!textDisplayField(
-            label: "Location",
-            value: local!weatherData.location
-          )
-        },
-        style: "ACCENT"
-      )
-    }
+          then: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
+          else: fv!item.status
+        ),
+        isCollapsed: true
+      ),
+      fv!item
+    )
   )
 )
