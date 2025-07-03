@@ -1,13 +1,39 @@
-if(
-  and(
-    fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
-    and(
-      a!forEach(
-        items: local!screenSectionBeneficiariesMap,
-        expression: and(
-          not(isnull(fv!item.status)),
-          fv!item.status <> ""
-        )
+a!save(
+  ri!screenSectionMapList,
+  a!forEach(
+    items: ri!screenSectionMapList,
+    expression: if(
+      fv!item.entity = ri!screenSectionMap.entity,
+      /* Update the current sub-section */
+      a!map(
+        entity: fv!item.entity,
+        screenSection: fv!item.screenSection,
+        status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
+        isCollapsed: true
+      ),
+      if(
+        and(
+          fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
+          and(
+            a!forEach(
+              items: local!screenSectionBeneficiariesMap,
+              expression: and(
+                not(isnull(fv!item.status)),
+                fv!item.status <> ""
+              )
+            )
+          )
+        ),
+        /* Then update the main beneficiary section */
+        a!map(
+          entity: fv!item.entity,
+          screenSection: fv!item.screenSection,
+          status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
+          isCollapsed: true
+        ),
+        /* Otherwise leave it unchanged */
+        fv!item
       )
     )
-  ),
+  )
+)
