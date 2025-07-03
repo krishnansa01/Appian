@@ -1,28 +1,48 @@
-a!save(
-  ri!screenSectionMapList,
-  a!forEach(
-    items: ri!screenSectionMapList,
-    expression: if(
-      fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
-      a!map(
-        entity: fv!item.entity,
-        screenSection: fv!item.screenSection,
-        status: a!if(
-          condition: all(
+{
+  /* First update the subsection */
+  a!save(
+    ri!screenSectionBeneficiaryMap,
+    a!forEach(
+      items: ri!screenSectionBeneficiaryMap,
+      expression: if(
+        fv!item.entity = ri!screenSectionMap.entity,
+        a!map(
+          entity: fv!item.entity,
+          screenSection: fv!item.screenSection,
+          status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
+          isCollapsed: true
+        ),
+        fv!item
+      )
+    )
+  ),
+  
+  /* Then check and update main beneficiary if all subsections complete */
+  a!save(
+    ri!screenSectionMapList,
+    a!forEach(
+      items: ri!screenSectionMapList,
+      expression: if(
+        and(
+          fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
+          all(
             a!forEach(
-              items: local!screenSectionBeneficiariesMap,
+              items: ri!screenSectionBeneficiaryMap,
               expression: and(
                 not(isnull(fv!item.status)),
                 fv!item.status <> ""
               )
             )
-          ),
-          then: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
-          else: fv!item.status
+          )
         ),
-        isCollapsed: true
-      ),
-      fv!item
+        a!map(
+          entity: fv!item.entity,
+          screenSection: fv!item.screenSection,
+          status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
+          isCollapsed: true
+        ),
+        fv!item
+      )
     )
   )
-)
+}
