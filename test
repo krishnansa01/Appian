@@ -1,39 +1,170 @@
-a!save(
-  ri!screenSectionMapList,
-  a!forEach(
-    items: ri!screenSectionMapList,
-    expression: if(
-      fv!item.entity = ri!screenSectionMap.entity,
-      /* Update the current sub-section */
-      a!map(
-        entity: fv!item.entity,
-        screenSection: fv!item.screenSection,
-        status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
-        isCollapsed: true
-      ),
-      if(
-        and(
-          fv!item.entity = cons!NW_TEXT_CDM_FIELD_BENEFICIARY,
-          and(
-            a!forEach(
-              items: local!screenSectionBeneficiariesMap,
-              expression: and(
-                not(isnull(fv!item.status)),
-                fv!item.status <> ""
-              )
-            )
-          )
-        ),
-        /* Then update the main beneficiary section */
-        a!map(
-          entity: fv!item.entity,
-          screenSection: fv!item.screenSection,
-          status: cons!NW_TEXT_UPDATE_SUPPORTING_APPLICATION_FIELDS,
-          isCollapsed: true
-        ),
-        /* Otherwise leave it unchanged */
-        fv!item
+/* Review and Update Fields Configuration for Appian - Based on Code Reference */
+
+/* Define the discrepancy fields data structure */
+local!applicationAndAlipSelectableChoices: {
+  {
+    fieldName: "Email",
+    fieldKey: "email", 
+    applicationValue: "constance.wu@gmail.com",
+    alipValue: "constance.wu@gmail.com",
+    verificationIsNeeded: true,
+    selectedChoice: {},
+    cardChoices: {
+      a!cardTemplateBarTextStacked(
+        id: 1,
+        primaryText: "constance.wu@gmail.com"
       )
-    )
+    }
+  },
+  {
+    fieldName: "Address",
+    fieldKey: "address",
+    applicationValue: "DrNo 123 Address", 
+    alipValue: "456 Address",
+    verificationIsNeeded: true,
+    selectedChoice: {},
+    cardChoices: {
+      a!cardTemplateBarTextStacked(
+        id: 1,
+        primaryText: "DrNo 123 Address"
+      ),
+      a!cardTemplateBarTextStacked(
+        id: 2,
+        primaryText: "456 Address"
+      )
+    }
+  }
+};
+
+/* Constants for choices */
+local!CONST_TEXT_CHOICES_YES_OR_NO: {"Yes", "No"};
+local!CONST_TEXT_CHOICE_VALUES_TRUE_OR_FALSE: {true, false};
+
+/* Create the form interface */
+{
+  rule!MW_DisplaySectionHeader(
+    labelName: "Supporting Field Matches for " & upper(ri!entityType) & " Entity ",
+    dividerPosition: "NONE",
+    showWhen: ri!showWhen
+  ),
+  a!cardLayout(
+    contents: a!richTextDisplayField(
+      labelPosition: "COLLAPSED",
+      value: {
+        a!richTextIcon(icon: "info-circle", color: "ACCENT"),
+        " ",
+        a!richTextItem(
+          text: "If a modification to the ALIP entity is required, the information selected must be manually updated in ALIP.",
+        )
+      },
+      marginAbove: "LESS",
+      marginBelow: "LESS"
+    ),
+    showBorder: false,
+    showShadow: true,
+    style: "INFO",
+    marginBelow: "STANDARD",
+    showWhen: ri!showWhen
+  ),
+  a!columnsLayout(
+    columns: {
+      a!columnLayout(contents: {}, ),
+      a!columnLayout(
+        contents: {
+          a!columnsLayout(
+            columns: {
+              a!columnLayout(
+                contents: {
+                  a!richTextDisplayField(
+                    value: {
+                      a!richTextItem(
+                        text: "Application Field",
+                        style: "STRONG",
+                      )
+                    }
+                  )
+                }
+              ),
+              a!columnLayout(
+                contents: {
+                  a!richTextDisplayField(
+                    value: {
+                      a!richTextItem(text: "ALIP Field", style: "STRONG", )
+                    }
+                  )
+                },
+              ),
+            },
+          ),
+        },
+        width: "MEDIUM_PLUS"
+      ),
+      a!columnLayout(
+        contents: {
+          a!richTextDisplayField(
+            value: {
+              a!richTextItem(
+                text: "Is Verification Needed",
+                style: "STRONG",
+              )
+            }
+          )
+        },
+      ),
+    },
+    showWhen: ri!showWhen
+  ),
+  a!forEach(
+    items: ri!applicationAndAlipSelectableChoices,
+    expression: a!columnsLayout(
+      columns: {
+        a!columnLayout(
+          contents: {
+            a!richTextDisplayField(
+              value: {
+                a!richTextItem(
+                  text: index(fv!item, "fieldName", {}),
+                  style: "STRONG",
+                  color: cons!MW_COLOR_SECONDARY
+                )
+              }
+            )
+          },
+        ),
+        a!columnLayout(
+          contents: {
+            a!cardChoiceField(
+              label: "Application Status Choices",
+              labelPosition: "COLLAPSED",
+              align: "START",
+              data: index(fv!item, "cardChoices", {}),
+              cardTemplate: a!cardTemplateBarTextStacked(
+                id: fv!data.id,
+                primaryText: fv!data.primaryText,
+              ),
+              value: index(fv!item, "selectedChoice", {}),
+              saveInto: fv!item.selectedChoice,
+              maxSelections: 1,
+              required: true
+            )
+          },
+          width: "MEDIUM_PLUS"
+        ),
+        a!columnLayout(
+          contents: {
+            a!dropdownField(
+              choiceLabels: cons!MW_TEXT_CHOICES_YES_OR_NO,
+              choiceValues: toboolean(
+                cons!MW_TEXT_CHOICE_VALUES_TRUE_OR_FALSE
+              ),
+              placeholder: "Select",
+              value: toboolean(fv!item.verificationIsNeeded),
+              saveInto: fv!item.verificationIsNeeded,
+            ),
+          },
+        ),
+      },
+    ),
+    showWhen: ri!showWhen
   )
-)
+}
