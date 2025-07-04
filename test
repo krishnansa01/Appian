@@ -1,40 +1,7 @@
-/* Review and Update Fields Configuration for Appian - Based on Code Reference */
+/* Review and Update Fields Configuration for Appian - Using Rule Input Map */
 
-/* Define the discrepancy fields data structure */
-local!applicationAndAlipSelectableChoices: {
-  {
-    fieldName: "Email",
-    fieldKey: "email", 
-    applicationValue: "constance.wu@gmail.com",
-    alipValue: "constance.wu@gmail.com",
-    verificationIsNeeded: true,
-    selectedChoice: {},
-    cardChoices: {
-      a!cardTemplateBarTextStacked(
-        id: 1,
-        primaryText: "constance.wu@gmail.com"
-      )
-    }
-  },
-  {
-    fieldName: "Address",
-    fieldKey: "address",
-    applicationValue: "DrNo 123 Address", 
-    alipValue: "456 Address",
-    verificationIsNeeded: true,
-    selectedChoice: {},
-    cardChoices: {
-      a!cardTemplateBarTextStacked(
-        id: 1,
-        primaryText: "DrNo 123 Address"
-      ),
-      a!cardTemplateBarTextStacked(
-        id: 2,
-        primaryText: "456 Address"
-      )
-    }
-  }
-};
+/* Use rule input map data instead of hardcoded values */
+local!applicationAndAlipSelectableChoices: ri!applicationAndAlipMapData;
 
 /* Constants for choices */
 local!CONST_TEXT_CHOICES_YES_OR_NO: {"Yes", "No"};
@@ -115,7 +82,7 @@ local!CONST_TEXT_CHOICE_VALUES_TRUE_OR_FALSE: {true, false};
     showWhen: ri!showWhen
   ),
   a!forEach(
-    items: ri!applicationAndAlipSelectableChoices,
+    items: local!applicationAndAlipSelectableChoices,
     expression: a!columnsLayout(
       columns: {
         a!columnLayout(
@@ -140,7 +107,7 @@ local!CONST_TEXT_CHOICE_VALUES_TRUE_OR_FALSE: {true, false};
               data: index(fv!item, "cardChoices", {}),
               cardTemplate: a!cardTemplateBarTextStacked(
                 id: fv!data.id,
-                primaryText: fv!data.primaryText,
+                primaryText: fv!data.primaryText
               ),
               value: index(fv!item, "selectedChoice", {}),
               saveInto: fv!item.selectedChoice,
