@@ -92,48 +92,48 @@ a!localVariables(
             columns: {
               a!columnLayout(
                 contents: {
-                  /* Show editable field or display field based on editing state */
-                  if(
-                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
-                    /* Editing mode - show text field */
-                    a!textField(
-                      label: "Edit Application Field",
-                      labelPosition: "COLLAPSED",
-                      value: local!editingValue,
-                      saveInto: local!editingValue,
-                      placeholder: "Enter new field name",
-                      required: true
-                    ),
-                    /* Display mode - show current field name */
-                    a!richTextDisplayField(
-                      value: {
-                        a!richTextItem(
-                          text: index(fv!item, "fieldName", ""),
-                          style: "STRONG",
-                          color: cons!NW_COLOR_SECONDARY
-                        )
-                      }
-                    )
+                  /* Display field name (not editable) */
+                  a!richTextDisplayField(
+                    value: {
+                      a!richTextItem(
+                        text: index(fv!item, "fieldName", ""),
+                        style: "STRONG",
+                        color: cons!NW_COLOR_SECONDARY
+                      )
+                    }
                   )
                 }
               ),
               a!columnLayout(
                 contents: {
-                  a!cardChoiceField(
-                    label: "Application Status Choices",
-                    labelPosition: "COLLAPSED",
-                    align: "START",
-                    data: index(fv!item, "cardChoices", {}),
-                    cardTemplate: a!cardTemplateBarTextStacked(
-                      id: fv!data.id,
-                      primaryText: fv!data.primaryText
+                  if(
+                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
+                    /* Editing mode - show text field for application value */
+                    a!textField(
+                      label: "Edit Application Value",
+                      labelPosition: "COLLAPSED",
+                      value: local!editingValue,
+                      saveInto: local!editingValue,
+                      placeholder: "Enter new application value",
+                      required: true
                     ),
-                    value: index(fv!item, "selectedChoice", ""),
-                    saveInto: {
-                      a!save(local!applicationAndHipMapData[fv!index].selectedChoice, save!value)
-                    },
-                    maxSelections: 1,
-                    required: true
+                    /* Display mode - show card choice field */
+                    a!cardChoiceField(
+                      label: "Application Status Choices",
+                      labelPosition: "COLLAPSED",
+                      align: "START",
+                      data: index(fv!item, "cardChoices", {}),
+                      cardTemplate: a!cardTemplateBarTextStacked(
+                        id: fv!data.id,
+                        primaryText: fv!data.primaryText
+                      ),
+                      value: index(fv!item, "selectedChoice", ""),
+                      saveInto: {
+                        a!save(local!applicationAndHipMapData[fv!index].selectedChoice, save!value)
+                      },
+                      maxSelections: 1,
+                      required: true
+                    )
                   )
                 },
                 width: "MEDIUM_PLUS"
@@ -142,35 +142,40 @@ a!localVariables(
                 contents: {
                   if(
                     and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
-                    /* Show save/cancel buttons when editing */
-                    a!buttonArrayLayout(
-                      buttons: {
-                        a!buttonWidget(
-                          label: "Save",
-                          style: "PRIMARY",
-                          size: "SMALL",
-                          saveInto: {
-                            /* Update the field name with new value */
-                            a!save(
-                              local!applicationAndHipMapData[fv!index].fieldName,
-                              local!editingValue
-                            ),
-                            /* Clear editing state */
-                            a!save(local!editingIndex, tointeger(null)),
-                            a!save(local!editingValue, "")
-                          }
+                    /* Show save/cancel icons when editing */
+                    a!richTextDisplayField(
+                      value: {
+                        a!richTextIcon(
+                          icon: "check",
+                          color: "POSITIVE",
+                          caption: "Save changes",
+                          link: a!dynamicLink(
+                            saveInto: {
+                              /* Update the selected card choice with new application value */
+                              a!save(
+                                local!applicationAndHipMapData[fv!index].cardChoices[1].primaryText,
+                                local!editingValue
+                              ),
+                              /* Clear editing state */
+                              a!save(local!editingIndex, tointeger(null)),
+                              a!save(local!editingValue, "")
+                            }
+                          )
                         ),
-                        a!buttonWidget(
-                          label: "Cancel",
-                          style: "SECONDARY",
-                          size: "SMALL",
-                          saveInto: {
-                            a!save(local!editingIndex, tointeger(null)),
-                            a!save(local!editingValue, "")
-                          }
+                        "  ",
+                        a!richTextIcon(
+                          icon: "times",
+                          color: "NEGATIVE",
+                          caption: "Cancel editing",
+                          link: a!dynamicLink(
+                            saveInto: {
+                              a!save(local!editingIndex, tointeger(null)),
+                              a!save(local!editingValue, "")
+                            }
+                          )
                         )
                       },
-                      align: "START"
+                      linkStyle: "INLINE"
                     ),
                     /* Show edit button when not editing */
                     a!richTextDisplayField(
@@ -181,7 +186,8 @@ a!localVariables(
                           value: fv!index,
                           saveInto: {
                             a!save(local!editingIndex, save!value),
-                            a!save(local!editingValue, index(fv!item, "fieldName", ""))
+                            /* Pre-fill with current application value from first card choice */
+                            a!save(local!editingValue, index(index(fv!item, "cardChoices", {})[1], "primaryText", ""))
                           }
                         )
                       ),
