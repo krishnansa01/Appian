@@ -87,14 +87,14 @@ a!localVariables(
       a!forEach(
         items: local!applicationAndHipMapData,
         expression: a!localVariables(
-          local!disabled: true,
+          local!disabled: true(),
           a!columnsLayout(
             columns: {
               a!columnLayout(
                 contents: {
                   /* Show editable field or display field based on editing state */
                   if(
-                    local!editingIndex = fv!index,
+                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
                     /* Editing mode - show text field */
                     a!textField(
                       label: "Edit Application Field",
@@ -108,7 +108,7 @@ a!localVariables(
                     a!richTextDisplayField(
                       value: {
                         a!richTextItem(
-                          text: index(fv!item, "fieldName", {}),
+                          text: index(fv!item, "fieldName", ""),
                           style: "STRONG",
                           color: cons!NW_COLOR_SECONDARY
                         )
@@ -128,8 +128,10 @@ a!localVariables(
                       id: fv!data.id,
                       primaryText: fv!data.primaryText
                     ),
-                    value: index(fv!item, "selectedChoice", {}),
-                    saveInto: fv!item.selectedChoice,
+                    value: index(fv!item, "selectedChoice", ""),
+                    saveInto: {
+                      a!save(local!applicationAndHipMapData[fv!index].selectedChoice, save!value)
+                    },
                     maxSelections: 1,
                     required: true
                   )
@@ -139,7 +141,7 @@ a!localVariables(
               a!columnLayout(
                 contents: {
                   if(
-                    local!editingIndex = fv!index,
+                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
                     /* Show save/cancel buttons when editing */
                     a!buttonArrayLayout(
                       buttons: {
@@ -154,7 +156,7 @@ a!localVariables(
                               local!editingValue
                             ),
                             /* Clear editing state */
-                            a!save(local!editingIndex, null),
+                            a!save(local!editingIndex, tointeger(null)),
                             a!save(local!editingValue, "")
                           }
                         ),
@@ -163,7 +165,7 @@ a!localVariables(
                           style: "SECONDARY",
                           size: "SMALL",
                           saveInto: {
-                            a!save(local!editingIndex, null),
+                            a!save(local!editingIndex, tointeger(null)),
                             a!save(local!editingValue, "")
                           }
                         )
@@ -174,12 +176,12 @@ a!localVariables(
                     a!richTextDisplayField(
                       value: a!richTextIcon(
                         icon: "edit",
-                        caption: "Edit " & fv!item.fieldName & " Application Value",
+                        caption: "Edit " & index(fv!item, "fieldName", "") & " Application Value",
                         link: a!dynamicLink(
                           value: fv!index,
                           saveInto: {
-                            a!save(local!editingIndex, fv!index),
-                            a!save(local!editingValue, fv!item.fieldName)
+                            a!save(local!editingIndex, save!value),
+                            a!save(local!editingValue, index(fv!item, "fieldName", ""))
                           }
                         )
                       ),
@@ -195,16 +197,17 @@ a!localVariables(
                     choiceLabels: cons!NW_TEXT_CHOICES_YES_OR_NO,
                     choiceValues: cons!NW_TEXT_CHOICE_VALUES_TRUE_OR_FALSE,
                     placeholder: "Select",
-                    value: toboolean(fv!item.verificationIsNeeded),
-                    saveInto: fv!item.verificationIsNeeded,
+                    value: toboolean(index(fv!item, "verificationIsNeeded", false)),
+                    saveInto: {
+                      a!save(local!applicationAndHipMapData[fv!index].verificationIsNeeded, save!value)
+                    },
                     labelPosition: "COLLAPSED"
                   )
                 }
               )
             }
           )
-        ),
-        showWhen: ri!showWhen
+        )
       )
     }
   )
