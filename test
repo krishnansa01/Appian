@@ -1,5 +1,7 @@
-local!applicationAndHipMapData: a!forEach(
-    items: local!applicationAndAlipEditableDetails,
+a!localVariables(
+  /* Convert input data to the required format - unwrap the array */
+  local!applicationAndHipMapData: a!forEach(
+    items: index(ri!applicationAndAlipMapData, 1, {}),
     expression: a!map(
       fieldName: fv!item.fieldName,
       cardChoices: {
@@ -15,4 +17,203 @@ local!applicationAndHipMapData: a!forEach(
       selectedChoice: "",
       verificationIsNeeded: fv!item.verificationIsNeeded
     )
+  ),
+  
+  /* State variables for editing functionality */
+  local!editingIndex: null,
+  local!editingValue: "",
+  
+  a!sectionLayout(
+    contents: {
+      a!richTextDisplayField(
+        label: "Review and update the following Fields:"
+      ),
+      a!columnsLayout(
+        columns: {
+          a!columnLayout(contents: {}),
+          a!columnLayout(
+            contents: {
+              a!columnsLayout(
+                columns: {
+                  a!columnLayout(
+                    contents: {
+                      a!richTextDisplayField(
+                        value: {
+                          a!richTextItem(
+                            text: "Application Field",
+                            style: "STRONG"
+                          )
+                        }
+                      )
+                    }
+                  ),
+                  a!columnLayout(
+                    contents: {
+                      a!richTextDisplayField(
+                        value: {
+                          a!richTextItem(
+                            text: "ALIP Field",
+                            style: "STRONG"
+                          )
+                        }
+                      )
+                    }
+                  )
+                }
+              )
+            },
+            width: "MEDIUM_PLUS"
+          ),
+          a!columnLayout(
+            width: "EXTRA_NARROW"
+          ),
+          a!columnLayout(
+            contents: {
+              a!richTextDisplayField(
+                value: {
+                  a!richTextItem(
+                    text: "Is Verification Needed",
+                    style: "STRONG"
+                  )
+                }
+              )
+            }
+          )
+        }
+      ),
+      
+      /* Main forEach loop with editing functionality */
+      a!forEach(
+        items: local!applicationAndHipMapData,
+        expression: a!localVariables(
+          local!disabled: true(),
+          a!columnsLayout(
+            columns: {
+              a!columnLayout(
+                contents: {
+                  /* Display field name (not editable) */
+                  a!richTextDisplayField(
+                    value: {
+                      a!richTextItem(
+                        text: index(fv!item, "fieldName", ""),
+                        style: "STRONG",
+                        color: cons!NW_COLOR_SECONDARY
+                      )
+                    }
+                  )
+                }
+              ),
+              a!columnLayout(
+                contents: {
+                  if(
+                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
+                    /* Editing mode - show text field for application value */
+                    a!textField(
+                      label: "Edit Application Value",
+                      labelPosition: "COLLAPSED",
+                      value: local!editingValue,
+                      saveInto: local!editingValue,
+                      placeholder: "Enter new application value",
+                      required: true
+                    ),
+                    /* Display mode - show card choice field */
+                    a!cardChoiceField(
+                      label: "Application Status Choices",
+                      labelPosition: "COLLAPSED",
+                      align: "START",
+                      data: index(fv!item, "cardChoices", {}),
+                      cardTemplate: a!cardTemplateBarTextStacked(
+                        id: fv!data.id,
+                        primaryText: fv!data.primaryText
+                      ),
+                      value: index(fv!item, "selectedChoice", ""),
+                      saveInto: {
+                        a!save(local!applicationAndHipMapData[fv!index].selectedChoice, save!value)
+                      },
+                      maxSelections: 1,
+                      required: true
+                    )
+                  )
+                },
+                width: "MEDIUM_PLUS"
+              ),
+              a!columnLayout(
+                contents: {
+                  if(
+                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
+                    /* Show save/cancel icons when editing */
+                    a!richTextDisplayField(
+                      value: {
+                        a!richTextIcon(
+                          icon: "check",
+                          color: "POSITIVE",
+                          caption: "Save changes",
+                          link: a!dynamicLink(
+                            saveInto: {
+                              /* Update the selected card choice with new application value */
+                              a!save(
+                                local!applicationAndHipMapData[fv!index].cardChoices[1].primaryText,
+                                local!editingValue
+                              ),
+                              /* Clear editing state */
+                              a!save(local!editingIndex, tointeger(null)),
+                              a!save(local!editingValue, "")
+                            }
+                          )
+                        ),
+                        "  ",
+                        a!richTextIcon(
+                          icon: "times",
+                          color: "NEGATIVE",
+                          caption: "Cancel editing",
+                          link: a!dynamicLink(
+                            saveInto: {
+                              a!save(local!editingIndex, tointeger(null)),
+                              a!save(local!editingValue, "")
+                            }
+                          )
+                        )
+                      },
+                      linkStyle: "INLINE"
+                    ),
+                    /* Show edit button when not editing */
+                    a!richTextDisplayField(
+                      value: a!richTextIcon(
+                        icon: "edit",
+                        caption: "Edit " & index(fv!item, "fieldName", "") & " Application Value",
+                        link: a!dynamicLink(
+                          value: fv!index,
+                          saveInto: {
+                            a!save(local!editingIndex, save!value),
+                            /* Pre-fill with current application value from first card choice */
+                            a!save(local!editingValue, index(index(fv!item, "cardChoices", {})[1], "primaryText", ""))
+                          }
+                        )
+                      ),
+                      linkStyle: "INLINE"
+                    )
+                  )
+                },
+                width: "EXTRA_NARROW"
+              ),
+              a!columnLayout(
+                contents: {
+                  a!dropdownField(
+                    choiceLabels: cons!NW_TEXT_CHOICES_YES_OR_NO,
+                    choiceValues: cons!NW_TEXT_CHOICE_VALUES_TRUE_OR_FALSE,
+                    placeholder: "Select",
+                    value: toboolean(index(fv!item, "verificationIsNeeded", false)),
+                    saveInto: {
+                      a!save(local!applicationAndHipMapData[fv!index].verificationIsNeeded, save!value)
+                    },
+                    labelPosition: "COLLAPSED"
+                  )
+                }
+              )
+            }
+          )
+        )
+      )
+    }
   )
+)
