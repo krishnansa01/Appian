@@ -1,23 +1,25 @@
 a!localVariables(
-  /* Convert input data to the required format - unwrap the array */
-  local!applicationAndHipMapData: a!forEach(
-    items: index(ri!applicationAndAlipMapData, 1, {}),
-    expression: a!map(
-      fieldName: fv!item.fieldName,
+  /* Use hardcoded data directly in the expected format */
+  local!applicationAndHipMapData: {
+    a!map(
+      fieldName: "Email",
       cardChoices: {
-        a!map(
-          id: "application/" & lower(fv!item.fieldName),
-          primaryText: fv!item.applicationValue
-        ),
-        a!map(
-          id: "slip_entity/" & lower(fv!item.fieldName),
-          primaryText: fv!item.alipValue
-        )
+        a!map(id: "application/email", primaryText: "constance.wu@gmail.com"),
+        a!map(id: "slip_entity/email", primaryText: "constance.wu@gmail.com")
       },
       selectedChoice: "",
-      verificationIsNeeded: fv!item.verificationIsNeeded
+      verificationIsNeeded: true()
+    ),
+    a!map(
+      fieldName: "Address",
+      cardChoices: {
+        a!map(id: "application/address", primaryText: "DrNo 123 Address"),
+        a!map(id: "slip_entity/address", primaryText: "456 Address")
+      },
+      selectedChoice: "",
+      verificationIsNeeded: true()
     )
-  ),
+  },
   
   /* State variables for editing functionality */
   local!editingIndex: null,
