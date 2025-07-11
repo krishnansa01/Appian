@@ -1,221 +1,135 @@
 a!localVariables(
-  /* Use hardcoded data directly in the expected format */
-  local!applicationAndHipMapData: {
-    a!map(
-      fieldName: "Email",
-      cardChoices: {
-        a!map(id: "application/email", primaryText: "constance.wu@gmail.com"),
-        a!map(id: "slip_entity/email", primaryText: "constance.wu@gmail.com")
-      },
-      selectedChoice: "",
-      verificationIsNeeded: true()
-    ),
-    a!map(
-      fieldName: "Address",
-      cardChoices: {
-        a!map(id: "application/address", primaryText: "DrNo 123 Address"),
-        a!map(id: "slip_entity/address", primaryText: "456 Address")
-      },
-      selectedChoice: "",
-      verificationIsNeeded: true()
-    )
-  },
+  /* Variables to store search criteria */
+  local!contractNumber,
+  local!vcn,
+  local!ecn,
+  local!searchCriteria,
+  local!searchResults,
+  local!showInterface: true, /* Initialize to show the interface */
   
-  /* State variables for editing functionality */
-  local!editingIndex: null,
-  local!editingValue: "",
-  
-  a!sectionLayout(
-    contents: {
-      a!richTextDisplayField(
-        label: "Review and update the following Fields:"
-      ),
-      a!columnsLayout(
-        columns: {
-          a!columnLayout(contents: {}),
-          a!columnLayout(
-            contents: {
-              a!columnsLayout(
-                columns: {
-                  a!columnLayout(
-                    contents: {
-                      a!richTextDisplayField(
+  /* Interface Layout */
+  if(
+    local!showInterface,
+    a!headerContentLayout(
+      header: {
+        a!cardLayout(
+          contents: {
+            a!richTextDisplayField(
+              value: {
+                a!richTextItem(
+                  text: "APPLICATIONS SEARCH",
+                  size: "MEDIUM_PLUS", 
+                  style: "STRONG"
+                )
+              }
+            )
+          },
+          style: cons!NW_COLOR_PRIMARY,
+          height: "EXTRA_SHORT"
+        )
+      },
+      contents: {
+        a!cardLayout(
+          contents: {
+            a!columnLayout(
+              contents: {
+                /* Contract Number Field */
+                a!sideBySideLayout(
+                  items: {
+                    a!sideBySideItem(
+                      width: "MINIMIZE",
+                      item: a!richTextDisplayField(
                         value: {
                           a!richTextItem(
-                            text: "Application Field",
+                            text: "Contract Number",
+                            size: "STANDARD",
                             style: "STRONG"
                           )
                         }
                       )
-                    }
-                  ),
-                  a!columnLayout(
-                    contents: {
-                      a!richTextDisplayField(
+                    ),
+                    a!sideBySideItem(
+                      item: a!textField(
+                        label: "Contract Number",
+                        labelPosition: "COLLAPSED",
+                        value: local!contractNumber,
+                        saveInto: {
+                          local!contractNumber,
+                          a!save(local!searchCriteria, {})
+                        },
+                        refreshAfter: "UNFOCUS",
+                        validations: {}
+                      )
+                    )
+                  }
+                ),
+                /* VCN Field */
+                a!sideBySideLayout(
+                  items: {
+                    a!sideBySideItem(
+                      width: "MINIMIZE", 
+                      item: a!richTextDisplayField(
                         value: {
                           a!richTextItem(
-                            text: "ALIP Field",
+                            text: "VCN",
+                            size: "STANDARD",
                             style: "STRONG"
                           )
                         }
                       )
-                    }
-                  )
-                }
-              )
-            },
-            width: "MEDIUM_PLUS"
-          ),
-          a!columnLayout(
-            width: "EXTRA_NARROW"
-          ),
-          a!columnLayout(
-            contents: {
-              a!richTextDisplayField(
-                value: {
-                  a!richTextItem(
-                    text: "Is Verification Needed",
-                    style: "STRONG"
-                  )
-                }
-              )
-            }
-          )
-        }
-      ),
-      
-      /* Main forEach loop with editing functionality */
-      a!forEach(
-        items: local!applicationAndHipMapData,
-        expression: a!localVariables(
-          local!disabled: true(),
-          a!columnsLayout(
-            columns: {
-              a!columnLayout(
-                contents: {
-                  /* Display field name (not editable) */
-                  a!richTextDisplayField(
-                    value: {
-                      a!richTextItem(
-                        text: index(fv!item, "fieldName", ""),
-                        style: "STRONG",
-                        color: cons!NW_COLOR_SECONDARY
+                    ),
+                    a!sideBySideItem(
+                      item: a!textField(
+                        label: "VCN",
+                        labelPosition: "COLLAPSED", 
+                        value: local!vcn,
+                        saveInto: {
+                          local!vcn,
+                          a!save(local!searchCriteria, {})
+                        },
+                        refreshAfter: "UNFOCUS",
+                        validations: {}
                       )
-                    }
-                  )
-                }
-              ),
-              a!columnLayout(
-                contents: {
-                  if(
-                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
-                    /* Editing mode - show text field for application value */
-                    a!textField(
-                      label: "Edit Application Value",
-                      labelPosition: "COLLAPSED",
-                      value: local!editingValue,
-                      saveInto: local!editingValue,
-                      placeholder: "Enter new application value",
-                      required: true
-                    ),
-                    /* Display mode - show card choice field */
-                    a!cardChoiceField(
-                      label: "Application Status Choices",
-                      labelPosition: "COLLAPSED",
-                      align: "START",
-                      data: index(fv!item, "cardChoices", {}),
-                      cardTemplate: a!cardTemplateBarTextStacked(
-                        id: fv!data.id,
-                        primaryText: fv!data.primaryText
-                      ),
-                      value: index(fv!item, "selectedChoice", ""),
-                      saveInto: {
-                        a!save(local!applicationAndHipMapData[fv!index].selectedChoice, save!value)
-                      },
-                      maxSelections: 1,
-                      required: true
                     )
-                  )
-                },
-                width: "MEDIUM_PLUS"
-              ),
-              a!columnLayout(
-                contents: {
-                  if(
-                    and(not(isnull(local!editingIndex)), local!editingIndex = fv!index),
-                    /* Show save/cancel icons when editing */
-                    a!richTextDisplayField(
-                      value: {
-                        a!richTextIcon(
-                          icon: "check",
-                          color: "POSITIVE",
-                          caption: "Save changes",
-                          link: a!dynamicLink(
-                            saveInto: {
-                              /* Update the selected card choice with new application value */
-                              a!save(
-                                local!applicationAndHipMapData[fv!index].cardChoices[1].primaryText,
-                                local!editingValue
-                              ),
-                              /* Clear editing state */
-                              a!save(local!editingIndex, tointeger(null)),
-                              a!save(local!editingValue, "")
-                            }
+                  }
+                ),
+                /* ECN Field */
+                a!sideBySideLayout(
+                  items: {
+                    a!sideBySideItem(
+                      width: "MINIMIZE",
+                      item: a!richTextDisplayField(
+                        value: {
+                          a!richTextItem(
+                            text: "ECN", 
+                            size: "STANDARD",
+                            style: "STRONG"
                           )
-                        ),
-                        "  ",
-                        a!richTextIcon(
-                          icon: "times",
-                          color: "NEGATIVE",
-                          caption: "Cancel editing",
-                          link: a!dynamicLink(
-                            saveInto: {
-                              a!save(local!editingIndex, tointeger(null)),
-                              a!save(local!editingValue, "")
-                            }
-                          )
-                        )
-                      },
-                      linkStyle: "INLINE"
+                        }
+                      )
                     ),
-                    /* Show edit button when not editing */
-                    a!richTextDisplayField(
-                      value: a!richTextIcon(
-                        icon: "edit",
-                        caption: "Edit " & index(fv!item, "fieldName", "") & " Application Value",
-                        link: a!dynamicLink(
-                          value: fv!index,
-                          saveInto: {
-                            a!save(local!editingIndex, save!value),
-                            /* Pre-fill with current application value from first card choice */
-                            a!save(local!editingValue, index(index(fv!item, "cardChoices", {})[1], "primaryText", ""))
-                          }
-                        )
-                      ),
-                      linkStyle: "INLINE"
+                    a!sideBySideItem(
+                      item: a!textField(
+                        label: "ECN",
+                        labelPosition: "COLLAPSED",
+                        value: local!ecn,
+                        saveInto: {
+                          local!ecn,
+                          a!save(local!searchCriteria, {})
+                        },
+                        refreshAfter: "UNFOCUS", 
+                        validations: {}
+                      )
                     )
-                  )
-                },
-                width: "EXTRA_NARROW"
-              ),
-              a!columnLayout(
-                contents: {
-                  a!dropdownField(
-                    choiceLabels: cons!NW_TEXT_CHOICES_YES_OR_NO,
-                    choiceValues: cons!NW_TEXT_CHOICE_VALUES_TRUE_OR_FALSE,
-                    placeholder: "Select",
-                    value: toboolean(index(fv!item, "verificationIsNeeded", false)),
-                    saveInto: {
-                      a!save(local!applicationAndHipMapData[fv!index].verificationIsNeeded, save!value)
-                    },
-                    labelPosition: "COLLAPSED"
-                  )
-                }
-              )
-            }
+                  }
+                )
+              }
+            )
           )
         )
-      )
-    }
+      }
+    ),
+    /* This will show when showInterface is false */
+    {}
   )
 )
