@@ -5,7 +5,7 @@ a!localVariables(
   local!ecn,
   local!searchCriteria,
   local!searchResults,
-  local!showInterface: true, /* Initialize to show the interface */
+  local!showInterface: true,
   
   /* Interface Layout */
   if(
@@ -125,7 +125,7 @@ a!localVariables(
                 )
               }
             )
-          )
+          }
         )
       }
     ),
