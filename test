@@ -1,135 +1,162 @@
-a!localVariables(
-  /* Variables to store search criteria */
-  local!contractNumber,
-  local!vcn,
-  local!ecn,
-  local!searchCriteria,
-  local!searchResults,
-  local!showInterface: true,
-  
-  /* Interface Layout */
-  if(
-    local!showInterface,
-    a!headerContentLayout(
-      header: {
-        a!cardLayout(
-          contents: {
-            a!richTextDisplayField(
-              value: {
-                a!richTextItem(
-                  text: "APPLICATIONS SEARCH",
-                  size: "MEDIUM_PLUS", 
-                  style: "STRONG"
-                )
-              }
-            )
-          },
-          style: cons!NW_COLOR_PRIMARY,
-          height: "EXTRA_SHORT"
-        )
-      },
-      contents: {
-        a!cardLayout(
-          contents: {
-            a!columnLayout(
-              contents: {
-                /* Contract Number Field */
-                a!sideBySideLayout(
-                  items: {
-                    a!sideBySideItem(
-                      width: "MINIMIZE",
-                      item: a!richTextDisplayField(
-                        value: {
-                          a!richTextItem(
-                            text: "Contract Number",
-                            size: "STANDARD",
-                            style: "STRONG"
-                          )
-                        }
-                      )
-                    ),
-                    a!sideBySideItem(
-                      item: a!textField(
-                        label: "Contract Number",
-                        labelPosition: "COLLAPSED",
-                        value: local!contractNumber,
-                        saveInto: {
-                          local!contractNumber,
-                          a!save(local!searchCriteria, {})
-                        },
-                        refreshAfter: "UNFOCUS",
-                        validations: {}
-                      )
-                    )
-                  }
-                ),
-                /* VCN Field */
-                a!sideBySideLayout(
-                  items: {
-                    a!sideBySideItem(
-                      width: "MINIMIZE", 
-                      item: a!richTextDisplayField(
-                        value: {
-                          a!richTextItem(
-                            text: "VCN",
-                            size: "STANDARD",
-                            style: "STRONG"
-                          )
-                        }
-                      )
-                    ),
-                    a!sideBySideItem(
-                      item: a!textField(
-                        label: "VCN",
-                        labelPosition: "COLLAPSED", 
-                        value: local!vcn,
-                        saveInto: {
-                          local!vcn,
-                          a!save(local!searchCriteria, {})
-                        },
-                        refreshAfter: "UNFOCUS",
-                        validations: {}
-                      )
-                    )
-                  }
-                ),
-                /* ECN Field */
-                a!sideBySideLayout(
-                  items: {
-                    a!sideBySideItem(
-                      width: "MINIMIZE",
-                      item: a!richTextDisplayField(
-                        value: {
-                          a!richTextItem(
-                            text: "ECN", 
-                            size: "STANDARD",
-                            style: "STRONG"
-                          )
-                        }
-                      )
-                    ),
-                    a!sideBySideItem(
-                      item: a!textField(
-                        label: "ECN",
-                        labelPosition: "COLLAPSED",
-                        value: local!ecn,
-                        saveInto: {
-                          local!ecn,
-                          a!save(local!searchCriteria, {})
-                        },
-                        refreshAfter: "UNFOCUS", 
-                        validations: {}
-                      )
-                    )
-                  }
-                )
-              }
-            )
-          }
-        )
-      }
+a!gridColumn(
+  label: "SSN / TIN",
+  value: if(
+    isnull(fv!row.tin),
+    "",
+    fv!row.tin
+  )
+),
+
+a!gridColumn(
+  label: "Date of Birth",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.date_of_birth)
     ),
-    /* This will show when showInterface is false */
-    {}
+    "",
+    fv!row.alip.date_of_birth
+  )
+),
+
+a!gridColumn(
+  label: "Age",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.date_of_birth),
+      isblank(fv!row.alip.date_of_birth)
+    ),
+    "",
+    if(
+      isnull(fv!row.alip.date_of_birth),
+      "",
+      floor(
+        year(today()) - year(fv!row.alip.date_of_birth) -
+        if(
+          or(
+            month(today()) < month(fv!row.alip.date_of_birth),
+            and(
+              month(today()) = month(fv!row.alip.date_of_birth),
+              day(today()) < day(fv!row.alip.date_of_birth)
+            )
+          ),
+          1,
+          0
+        )
+      )
+    )
+  )
+),
+
+a!gridColumn(
+  label: "Gender",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.gender_code)
+    ),
+    "",
+    choose(
+      tointeger(fv!row.alip.gender_code) + 1,
+      "Other",    /* gender_code = 0 */
+      "Male",     /* gender_code = 1 */
+      "Female"    /* gender_code = 2 */
+    )
+  )
+),
+
+a!gridColumn(
+  label: "Email",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.email_addresses),
+      length(fv!row.alip.email_addresses) = 0,
+      isnull(index(fv!row.alip.email_addresses, 1, null)),
+      isnull(index(fv!row.alip.email_addresses, 1, null).address)
+    ),
+    "",
+    index(fv!row.alip.email_addresses, 1, {}).address
+  )
+),
+
+a!gridColumn(
+  label: "Phone",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.phone_numbers),
+      length(fv!row.alip.phone_numbers) = 0,
+      isnull(index(fv!row.alip.phone_numbers, 1, null))
+    ),
+    "",
+    concat(
+      if(
+        isnull(index(fv!row.alip.phone_numbers, 1, {}).area_code),
+        "",
+        concat("(", index(fv!row.alip.phone_numbers, 1, {}).area_code, ") ")
+      ),
+      if(
+        isnull(index(fv!row.alip.phone_numbers, 1, {}).dial_number),
+        "",
+        index(fv!row.alip.phone_numbers, 1, {}).dial_number
+      )
+    )
+  )
+),
+
+a!gridColumn(
+  label: "Resident State",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      isnull(fv!row.alip.addresses),
+      length(fv!row.alip.addresses) = 0,
+      isnull(index(fv!row.alip.addresses, 1, null)),
+      isnull(index(fv!row.alip.addresses, 1, null).state)
+    ),
+    "GEORGIA", /* Default state */
+    index(fv!row.alip.addresses, 1, {}).state
+  )
+),
+
+a!gridColumn(
+  label: "Entity Type",
+  value: if(
+    isnull(fv!row.client_type),
+    "",
+    fv!row.client_type
+  )
+),
+
+a!gridColumn(
+  label: "Name",
+  value: if(
+    or(
+      isnull(fv!row.alip),
+      and(
+        isnull(fv!row.alip.full_name),
+        isnull(fv!row.alip.first_name),
+        isnull(fv!row.alip.last_name)
+      )
+    ),
+    "",
+    if(
+      not(isnull(fv!row.alip.full_name)),
+      fv!row.alip.full_name,
+      concat(
+        if(isnull(fv!row.alip.first_name), "", fv!row.alip.first_name),
+        if(
+          or(
+            isnull(fv!row.alip.first_name),
+            isnull(fv!row.alip.last_name)
+          ),
+          "",
+          " "
+        ),
+        if(isnull(fv!row.alip.last_name), "", fv!row.alip.last_name)
+      )
+    )
   )
 )
