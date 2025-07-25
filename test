@@ -1,101 +1,107 @@
-a!localVariables(
-  local!alip: index(fv!row, "alip", {}),
-  local!emailAddresses: index(local!alip, "email_addresses", {}),
-  local!phoneNumbers: index(local!alip, "phone_numbers", {}),
-  local!addresses: index(local!alip, "addresses", {}),
-  local!dateOfBirth: index(local!alip, "date_of_birth", ""),
-  
-  {
-    a!gridColumn(
-      label: "SSN / TIN",
-      value: index(fv!row, "tin", "")
+a!gridColumn(
+  label: "SSN / TIN",
+  value: index(fv!row, "tin", "")
+),
+
+a!gridColumn(
+  label: "Date of Birth",
+  value: index(index(fv!row, "alip", {}), "date_of_birth", "")
+),
+
+a!gridColumn(
+  label: "Age",
+  value: if(
+    or(
+      isnull(index(index(fv!row, "alip", {}), "date_of_birth", null)),
+      len(index(index(fv!row, "alip", {}), "date_of_birth", "")) = 0
     ),
-    
-    a!gridColumn(
-      label: "Date of Birth",
-      value: local!dateOfBirth
-    ),
-    
-    a!gridColumn(
-      label: "Age",
-      value: if(
+    "",
+    floor(
+      year(today()) - year(todate(index(index(fv!row, "alip", {}), "date_of_birth", ""))) -
+      if(
         or(
-          isnull(local!dateOfBirth),
-          len(local!dateOfBirth) = 0
-        ),
-        "",
-        floor(
-          year(today()) - year(todate(local!dateOfBirth)) -
-          if(
-            or(
-              month(today()) < month(todate(local!dateOfBirth)),
-              and(
-                month(today()) = month(todate(local!dateOfBirth)),
-                day(today()) < day(todate(local!dateOfBirth))
-              )
-            ),
-            1,
-            0
+          month(today()) < month(todate(index(index(fv!row, "alip", {}), "date_of_birth", ""))),
+          and(
+            month(today()) = month(todate(index(index(fv!row, "alip", {}), "date_of_birth", ""))),
+            day(today()) < day(todate(index(index(fv!row, "alip", {}), "date_of_birth", "")))
           )
-        )
-      )
-    ),
-    
-    a!gridColumn(
-      label: "Gender",
-      value: choose(
-        tointeger(index(local!alip, "gender_code", "0")) + 1,
-        "Other",
-        "Male", 
-        "Female"
-      )
-    ),
-    
-    a!gridColumn(
-      label: "Email",
-      value: index(index(local!emailAddresses, 1, {}), "address", "")
-    ),
-    
-    a!gridColumn(
-      label: "Phone",
-      value: a!defaultValue(
-        value: concat(
-          if(
-            or(
-              isnull(index(index(local!phoneNumbers, 1, {}), "area_code", null)),
-              len(index(index(local!phoneNumbers, 1, {}), "area_code", "")) = 0
-            ),
-            "",
-            concat("(", index(index(local!phoneNumbers, 1, {}), "area_code", ""), ") ")
-          ),
-          index(index(local!phoneNumbers, 1, {}), "dial_number", "")
         ),
-        default: ""
-      )
-    ),
-    
-    a!gridColumn(
-      label: "Resident State", 
-      value: index(index(local!addresses, 1, {}), "state", "GEORGIA")
-    ),
-    
-    a!gridColumn(
-      label: "Entity Type",
-      value: index(fv!row, "client_type", "Individual")
-    ),
-    
-    a!gridColumn(
-      label: "Name",
-      value: a!defaultValue(
-        value: index(local!alip, "full_name", ""),
-        default: trim(
-          concat(
-            index(local!alip, "first_name", ""),
-            " ",
-            index(local!alip, "last_name", "")
-          )
-        )
+        1,
+        0
       )
     )
-  }
+  )
+),
+
+a!gridColumn(
+  label: "Gender",
+  value: choose(
+    tointeger(index(index(fv!row, "alip", {}), "gender_code", "0")) + 1,
+    "Other",    /* gender_code = 0 */
+    "Male",     /* gender_code = 1 */
+    "Female"    /* gender_code = 2 */
+  )
+),
+
+a!gridColumn(
+  label: "Email",
+  value: index(
+    index(
+      index(index(fv!row, "alip", {}), "email_addresses", {}), 
+      1, 
+      {}
+    ), 
+    "address", 
+    ""
+  )
+),
+
+a!gridColumn(
+  label: "Phone",
+  value: a!defaultValue(
+    value: concat(
+      if(
+        or(
+          isnull(index(index(index(fv!row, "alip", {}), "phone_numbers", {}), 1, {}).area_code),
+          len(index(index(index(fv!row, "alip", {}), "phone_numbers", {}), 1, {}).area_code) = 0
+        ),
+        "",
+        concat("(", index(index(index(fv!row, "alip", {}), "phone_numbers", {}), 1, {}).area_code, ") ")
+      ),
+      index(index(index(fv!row, "alip", {}), "phone_numbers", {}), 1, {}).dial_number
+    ),
+    default: ""
+  )
+),
+
+a!gridColumn(
+  label: "Resident State",
+  value: index(
+    index(
+      index(index(fv!row, "alip", {}), "addresses", {}), 
+      1, 
+      {}
+    ), 
+    "state", 
+    "GEORGIA"
+  )
+),
+
+a!gridColumn(
+  label: "Entity Type",
+  value: index(fv!row, "client_type", "Individual")
+),
+
+a!gridColumn(
+  label: "Name",
+  value: a!defaultValue(
+    value: index(index(fv!row, "alip", {}), "full_name", ""),
+    default: trim(
+      concat(
+        index(index(fv!row, "alip", {}), "first_name", ""),
+        " ",
+        index(index(fv!row, "alip", {}), "last_name", "")
+      )
+    )
+  )
 )
