@@ -1,22 +1,8 @@
-a!localVariables(
-  local!cleanStates: {},
-  local!processStates: a!forEach(
-    items: pv!residenceStates,
-    expression: if(
-      fv!item <> "",
-      local!cleanStates: append(local!cleanStates, fv!item),
-      null
-    )
-  ),
-  if(
-    length(local!cleanStates) > 0,
-    a!dropdownField(
-      label: "Residence State",
-      choiceLabels: local!cleanStates,
-      choiceValues: local!cleanStates,
-      value: ri!selectedState,
-      saveInto: ri!selectedState
-    ),
-    {}
+a!textDisplayField(
+  label: "Debug - Residence States",
+  value: if(
+    isnull(local!residenceStates),
+    "residenceStates is null",
+    "Count: " & length(local!residenceStates) & " - Values: " & joinarray(local!residenceStates, ", ")
   )
 )
