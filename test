@@ -1,17 +1,22 @@
 a!localVariables(
-  local!cleanStates: a!forEach(
+  local!cleanStates: {},
+  local!processStates: a!forEach(
     items: pv!residenceStates,
     expression: if(
-      len(trim(fv!item)) > 0,
-      fv!item,
-      {}
+      fv!item <> "",
+      local!cleanStates: append(local!cleanStates, fv!item),
+      null
     )
   ),
-  a!dropdownField(
-    label: "Residence State",
-    choiceLabels: local!cleanStates,
-    choiceValues: local!cleanStates,
-    value: ri!selectedState,
-    saveInto: ri!selectedState
+  if(
+    length(local!cleanStates) > 0,
+    a!dropdownField(
+      label: "Residence State",
+      choiceLabels: local!cleanStates,
+      choiceValues: local!cleanStates,
+      value: ri!selectedState,
+      saveInto: ri!selectedState
+    ),
+    {}
   )
 )
