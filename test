@@ -1,24 +1,18 @@
 a!localVariables(
-  local!uniqueStates: union(local!residenceStates, {}),  /* This removes duplicates */
-  local!cleanStates: reject(isblank, local!uniqueStates), /* This removes empty values */
-  
-  /* Debug to see the cleaned result */
-  a!textDisplayField(
-    label: "Debug - Clean States",
-    value: "Count: " & length(local!cleanStates) & " - Values: " & joinarray(local!cleanStates, ", ")
+  local!cleanStates: reject(
+    fn!or(
+      fn!isnull(_),
+      _ = ""
+    ),
+    union(local!residenceStates, local!residenceStates)
   ),
   
-  /* The actual dropdown */
-  if(
-    length(local!cleanStates) > 0,
-    a!dropdownField(
-      label: "Residence State",
-      choiceLabels: local!cleanStates,
-      choiceValues: local!cleanStates,
-      placeholder: "Select a state",
-      value: local!selectedState,
-      saveInto: local!selectedState
-    ),
-    {}
+  a!dropdownField(
+    label: "Residence State",
+    choiceLabels: local!cleanStates,
+    choiceValues: local!cleanStates,
+    placeholder: "Select a state",
+    value: local!selectedState,
+    saveInto: local!selectedState
   )
 )
