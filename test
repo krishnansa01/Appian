@@ -1,10 +1,11 @@
 a!localVariables(
-  local!cleanStates: reject(
-    fn!or(
-      fn!isnull(_),
-      fn!isblank(_)
-    ),
-    pv!residenceStates
+  local!cleanStates: a!forEach(
+    items: pv!residenceStates,
+    expression: if(
+      len(trim(fv!item)) > 0,
+      fv!item,
+      {}
+    )
   ),
   a!dropdownField(
     label: "Residence State",
