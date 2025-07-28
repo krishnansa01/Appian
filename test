@@ -1,14 +1,20 @@
 a!localVariables(
-  local!cleanStates: reject(
-    fn!or(
-      fn!isnull(_),
-      _ = ""
-    ),
-    union(local!residenceStates, local!residenceStates)
+  local!cleanStates: {},
+  local!temp: a!forEach(
+    items: local!residenceStates,
+    expression: if(
+      and(
+        not(isnull(fv!item)),
+        fv!item <> "",
+        not(contains(local!cleanStates, fv!item))
+      ),
+      local!cleanStates: append(local!cleanStates, fv!item),
+      null
+    )
   ),
   
   a!dropdownField(
-    label: "Residence State",
+    label: "Residence State", 
     choiceLabels: local!cleanStates,
     choiceValues: local!cleanStates,
     placeholder: "Select a state",
