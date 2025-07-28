@@ -1,8 +1,24 @@
-a!textDisplayField(
-  label: "Debug - Residence States",
-  value: if(
-    isnull(local!residenceStates),
-    "residenceStates is null",
-    "Count: " & length(local!residenceStates) & " - Values: " & joinarray(local!residenceStates, ", ")
+a!localVariables(
+  local!uniqueStates: union(local!residenceStates, {}),  /* This removes duplicates */
+  local!cleanStates: reject(isblank, local!uniqueStates), /* This removes empty values */
+  
+  /* Debug to see the cleaned result */
+  a!textDisplayField(
+    label: "Debug - Clean States",
+    value: "Count: " & length(local!cleanStates) & " - Values: " & joinarray(local!cleanStates, ", ")
+  ),
+  
+  /* The actual dropdown */
+  if(
+    length(local!cleanStates) > 0,
+    a!dropdownField(
+      label: "Residence State",
+      choiceLabels: local!cleanStates,
+      choiceValues: local!cleanStates,
+      placeholder: "Select a state",
+      value: local!selectedState,
+      saveInto: local!selectedState
+    ),
+    {}
   )
 )
