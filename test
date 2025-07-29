@@ -1,14 +1,19 @@
 a!buttonWidget(
-  label: "Submit",
+  label: "Submit", 
   saveInto: {
-    a!localVariables(
-      local!parts: {},
-      local!parts: if(not(a!isNullOrEmpty(ri!leveragedEntityType)), append(local!parts, "client_type: " & """" & ri!leveragedEntityType & """"), local!parts),
-      local!parts: if(not(a!isNullOrEmpty(ri!ssn)), append(local!parts, "tin: " & """" & ri!ssn & """"), local!parts),
-      local!parts: if(not(a!isNullOrEmpty(ri!firstName)), append(local!parts, "first_name: " & """" & ri!firstName & """"), local!parts),
-      local!parts: if(not(a!isNullOrEmpty(ri!lastName)), append(local!parts, "last_name: " & """" & ri!lastName & """"), local!parts),
-      
-      a!save(ri!finalInputString, "input: {" & joinarray(local!parts, ", ") & "}")
+    a!save(
+      ri!finalInputString,
+      "input: {" & 
+      joinarray(
+        {
+          if(not(a!isNullOrEmpty(ri!leveragedEntityType)), "client_type: " & """" & ri!leveragedEntityType & """", {}),
+          if(not(a!isNullOrEmpty(ri!ssn)), "tin: " & """" & ri!ssn & """", {}),
+          if(not(a!isNullOrEmpty(ri!firstName)), "first_name: " & """" & ri!firstName & """", {}),
+          if(not(a!isNullOrEmpty(ri!lastName)), "last_name: " & """" & ri!lastName & """", {})
+        },
+        ", "
+      ) & 
+      "}"
     )
   }
 )
