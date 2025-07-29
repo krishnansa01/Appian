@@ -3,7 +3,7 @@ a!buttonWidget(
   saveInto: {
     a!save(
       ri!integrationInput,
-      "a!toJson({query:\"" & 
+      "a!toJson({query:" & """" & 
         "query GetCustomerView { getEntities(input: {" & 
         joinarray(
           {
@@ -15,7 +15,7 @@ a!buttonWidget(
           ", "
         ) & 
         "}) { scv_id client_type tin alip { full_name first_name last_name date_of_birth gender_code email_addresses { address } phone_numbers { area_code dial_number } addresses { state } } } }" &
-        "\"})"
+        """" & "})"
     )
   }
 )
