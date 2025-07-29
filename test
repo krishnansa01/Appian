@@ -1,24 +1,14 @@
-a!localVariables(
-  local!cleanStates: {},
-  local!temp: a!forEach(
-    items: local!residenceStates,
-    expression: if(
-      and(
-        not(isnull(fv!item)),
-        fv!item <> "",
-        not(contains(local!cleanStates, fv!item))
-      ),
-      local!cleanStates: append(local!cleanStates, fv!item),
-      null
+a!buttonWidget(
+  label: "Submit",
+  saveInto: {
+    a!localVariables(
+      local!parts: {},
+      local!parts: if(not(a!isNullOrEmpty(ri!leveragedEntityType)), append(local!parts, "client_type: " & """" & ri!leveragedEntityType & """"), local!parts),
+      local!parts: if(not(a!isNullOrEmpty(ri!ssn)), append(local!parts, "tin: " & """" & ri!ssn & """"), local!parts),
+      local!parts: if(not(a!isNullOrEmpty(ri!firstName)), append(local!parts, "first_name: " & """" & ri!firstName & """"), local!parts),
+      local!parts: if(not(a!isNullOrEmpty(ri!lastName)), append(local!parts, "last_name: " & """" & ri!lastName & """"), local!parts),
+      
+      a!save(ri!finalInputString, "input: {" & joinarray(local!parts, ", ") & "}")
     )
-  ),
-  
-  a!dropdownField(
-    label: "Residence State", 
-    choiceLabels: local!cleanStates,
-    choiceValues: local!cleanStates,
-    placeholder: "Select a state",
-    value: local!selectedState,
-    saveInto: local!selectedState
-  )
+  }
 )
