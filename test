@@ -1,1 +1,16 @@
-{"query": "query GetCustomerView { getEntities(input: {client_type: """"Individual"""", first_name: """"Joseph""""}) { scv_id client_type tin alip { full_name first_name last_name date_of_birth gender_code email_addresses { address } phone_numbers { area_code dial_number } addresses { state } } } }"}
+a!toJson({
+  "query": "query GetCustomerView { getEntities(input: {" & 
+    joinarray(
+      reject(
+        a!isNullOrEmpty,
+        {
+          if(a!isNotNullOrEmpty(ri!clientType), "client_type: " & """" & ri!clientType & """", null),
+          if(a!isNotNullOrEmpty(ri!tin), "tin: " & """" & ri!tin & """", null),
+          if(a!isNotNullOrEmpty(ri!firstName), "first_name: " & """" & ri!firstName & """", null),
+          if(a!isNotNullOrEmpty(ri!lastName), "last_name: " & """" & ri!lastName & """", null)
+        }
+      ),
+      ", "
+    ) & 
+    "}) { scv_id client_type tin alip { full_name first_name last_name date_of_birth gender_code email_addresses { address } phone_numbers { area_code dial_number } addresses { state } } } }"
+})
