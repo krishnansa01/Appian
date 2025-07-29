@@ -1,19 +1,25 @@
 a!buttonWidget(
-  label: "Submit", 
+  label: "Submit",
   saveInto: {
     a!save(
-      ri!finalInputString,
-      "input: {" & 
-      joinarray(
-        {
-          if(not(a!isNullOrEmpty(ri!leveragedEntityType)), "client_type: " & """" & ri!leveragedEntityType & """", {}),
-          if(not(a!isNullOrEmpty(ri!ssn)), "tin: " & """" & ri!ssn & """", {}),
-          if(not(a!isNullOrEmpty(ri!firstName)), "first_name: " & """" & ri!firstName & """", {}),
-          if(not(a!isNullOrEmpty(ri!lastName)), "last_name: " & """" & ri!lastName & """", {})
-        },
-        ", "
-      ) & 
-      "}"
+      local!apiResponse,
+      a!httpQuery(
+        uri: "your-api-endpoint",
+        httpMethod: "POST",
+        requestBody: a!toJson({
+          query: "query GetCustomerView { getEntities(input: {" & 
+            joinarray(
+              {
+                if(not(a!isNullOrEmpty(ri!leveragedEntityType)), "client_type: " & """" & ri!leveragedEntityType & """", {}),
+                if(not(a!isNullOrEmpty(ri!ssn)), "tin: " & """" & ri!ssn & """", {}),
+                if(not(a!isNullOrEmpty(ri!firstName)), "first_name: " & """" & ri!firstName & """", {}),
+                if(not(a!isNullOrEmpty(ri!lastName)), "last_name: " & """" & ri!lastName & """", {})
+              },
+              ", "
+            ) & 
+            "}) { scv_id client_type tin alip { full_name first_name last_name date_of_birth gender_code email_addresses { address } phone_numbers { area_code dial_number } addresses { state } } } }"
+        })
+      )
     )
   }
 )
