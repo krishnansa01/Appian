@@ -1,31 +1,33 @@
 a!toJson(
   value: {
-    query: "query MyQuery { getEntities(input: " & 
-           a!toJson(
-             value: {
-               firstName: if(
-                 and(not(isnull(ri!firstName)), len(trim(ri!firstName)) > 0),
-                 ri!firstName,
-                 null
-               ),
-               lastName: if(
-                 and(not(isnull(ri!lastName)), len(trim(ri!lastName)) > 0),
-                 ri!lastName,
-                 null
-               ),
-               ssn: if(
-                 and(not(isnull(ri!ssn)), len(trim(ri!ssn)) > 0),
-                 ri!ssn,
-                 null
-               ),
-               sovId: if(
-                 and(not(isnull(ri!sovId)), len(trim(ri!sovId)) > 0),
-                 ri!sovId,
-                 null
-               )
-             },
-             removeNullOrEmptyFields: true()
-           ) & 
-           ") { entities { addresses { address_source address_line_1 address_line_2 address_line_3 city state postal_code country } sov_id client_type record_type full_name government_id date_of_birth date_of_death gender_code password_question password portal_registration portal_username email_addresses { email_type address } phone_numbers { phone_type area_code dial_number } contracts { transaction_contracts { contract_number delivery issue_date } } preferences account_count product source_system status job_name tax_qualification role restrictions_and_alerts primary_servicing_producer jointId } } }"
+    query: concat(
+      "query MyQuery { getEntities(input: ",
+      a!toJson(
+        value: {
+          firstName: if(
+            and(not(isnull(ri!firstName)), len(trim(ri!firstName)) > 0),
+            ri!firstName,
+            null
+          ),
+          lastName: if(
+            and(not(isnull(ri!lastName)), len(trim(ri!lastName)) > 0),
+            ri!lastName,
+            null
+          ),
+          ssn: if(
+            and(not(isnull(ri!ssn)), len(trim(ri!ssn)) > 0),
+            ri!ssn,
+            null
+          ),
+          sovId: if(
+            and(not(isnull(ri!sovId)), len(trim(ri!sovId)) > 0),
+            ri!sovId,
+            null
+          )
+        },
+        removeNullOrEmptyFields: true()
+      ),
+      ") { entities { addresses { address_source address_line_1 address_line_2 address_line_3 city state postal_code country } sov_id client_type record_type full_name government_id date_of_birth date_of_death gender_code password_question password portal_registration portal_username email_addresses { email_type address } phone_numbers { phone_type area_code dial_number } contracts { transaction_contracts { contract_number delivery issue_date } } preferences account_count product source_system status job_name tax_qualification role restrictions_and_alerts primary_servicing_producer jointId } } }"
+    )
   }
 )
