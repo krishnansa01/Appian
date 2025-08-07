@@ -2,7 +2,7 @@ a!toJson(
   a!localVariables(
     local!inputObject: a!fromJson(
       a!toJson(
-        {
+        value: {
           firstName: if(
             and(not(isnull(ri!firstName)), len(trim(ri!firstName)) > 0),
             ri!firstName,
