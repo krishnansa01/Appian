@@ -1,8 +1,8 @@
 a!toJson(
-  {
+  value: {
     query: "query MyQuery { getEntities(input: " & 
            a!toJson(
-             {
+             value: {
                firstName: if(
                  and(not(isnull(ri!firstName)), len(trim(ri!firstName)) > 0),
                  ri!firstName,
